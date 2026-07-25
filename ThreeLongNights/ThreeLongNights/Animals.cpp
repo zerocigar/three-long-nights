@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include "Animals.h"
+#include "GameHelpers.h"
 
 int stepToward(const int& from, const int& to)
 {
@@ -26,8 +27,6 @@ int Animal::getY() const
 {
 	return y;
 }
-
-bool canEnter(int x, int y, const std::vector<Tile>& world);
 
 bool Animal::move(int newX, int newY, const std::vector<Tile>& world)
 {
