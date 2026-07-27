@@ -85,8 +85,8 @@ void Bear::chase(const std::vector<Tile>& world, Player& player)
 
 void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
 {
-	// if not aggro'd, daytime, and not in territory
-	if (!isInTerritory(x, y))
+	// if not aggro'd and not in territory
+	if (!aggroTiles && !isInTerritory(x, y))
 	{
 		int dx{ stepToward(x, homeX) };
 		int dy{ stepToward(y, homeY) };
@@ -143,27 +143,13 @@ std::vector<int> Bear::getNearestResourceTile(const std::vector<Tile>& world) co
 
 void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
 {
-	// full for the night — head home
-	if (tilesToForage == 0)
-	{
-		int dx{ stepToward(x, homeX) };
-		int dy{ stepToward(y, homeY) };
-
-		if (dx)
-		{
-			if (!move(x + dx, y, world))
-				move(x, y + dy, world);
-		}
-		else
-			move(x, y + dy, world);
-
-		return;
-	}
-
 	std::vector<int> coords{ getNearestResourceTile(world) };
 
-	if (coords.empty())   // nothing left to eat anywhere
+	if (tilesToForage == 0 || coords.empty())
+	{
+		wanderTerritory(world, player);
 		return;
+	}
 
 	int dx{ stepToward(x, coords[0]) };
 	int dy{ stepToward(y, coords[1]) };
@@ -178,7 +164,7 @@ void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
 
 	if (manhattanDistance(x, y, coords[0], coords[1]) <= 1)
 	{
-		world[cellIndex(x, y)].takeResource(tick);
+		world[cellIndex(coords[0], coords[1])].takeResource(tick);
 		tilesToForage--;
 	}
 }
