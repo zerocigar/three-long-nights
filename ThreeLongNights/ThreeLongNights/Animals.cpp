@@ -117,17 +117,78 @@ void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
 	move(x + randomX, y + randomY, world);
 }
 
-void Bear::forage(const std::vector<Tile>& world, Player& player)
+std::vector<int> Bear::getNearestResourceTile(const std::vector<Tile>& world) const
 {
-	if (!tilesToForage)
-		tilesToForage = rand() % 4 + 1;
+	bool found{ false };
+	int nearestDistance{ WIDTH * HEIGHT };
+	std::vector<int> coords{0, 0};
 
+	for (int y{ 0 }; y < HEIGHT; y++)
+	{
+		for (int x{ 0 }; x < WIDTH; x++)
+		{
+			if ((manhattanDistance(x, y, Bear::x, Bear::y) < nearestDistance) && world[cellIndex(x, y)].getHasResource() && world[cellIndex(x, y)].getTileType() != Tile::Grass)
+			{
+				nearestDistance = manhattanDistance(x, y, Bear::x, Bear::y);
+				coords[0] = x;
+				coords[1] = y;
+				found = true;
+			}
+		}
+	}
 
-	// TODO: find nearest tile with resources and bounce between them. after eating one, tilesToForage--
+	if (!found) return {};
+	return coords;
 }
 
-void Bear::takeTurn(const std::vector<Tile>& world, Player& player, bool isDay)
+void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
 {
+	// full for the night — head home
+	if (tilesToForage == 0)
+	{
+		int dx{ stepToward(x, homeX) };
+		int dy{ stepToward(y, homeY) };
+
+		if (dx)
+		{
+			if (!move(x + dx, y, world))
+				move(x, y + dy, world);
+		}
+		else
+			move(x, y + dy, world);
+
+		return;
+	}
+
+	std::vector<int> coords{ getNearestResourceTile(world) };
+
+	if (coords.empty())   // nothing left to eat anywhere
+		return;
+
+	int dx{ stepToward(x, coords[0]) };
+	int dy{ stepToward(y, coords[1]) };
+
+	if (dx)
+	{
+		if (!move(x + dx, y, world))
+			move(x, y + dy, world);
+	}
+	else
+		move(x, y + dy, world);
+
+	if (manhattanDistance(x, y, coords[0], coords[1]) <= 1)
+	{
+		world[cellIndex(x, y)].takeResource(tick);
+		tilesToForage--;
+	}
+}
+
+void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
+{
+	if (wasDay && !isDay)
+		tilesToForage = rand() % 6 + 3;
+	wasDay = isDay;
+
 	if (isInTerritory(player.getX(), player.getY()) && !aggroTiles && isDay)
 		aggroTiles = rand() % 6 + 5;
 
@@ -136,7 +197,7 @@ void Bear::takeTurn(const std::vector<Tile>& world, Player& player, bool isDay)
 	else if (isDay)
 		wanderTerritory(world, player);
 	else
-		forage(world, player);
+		forage(world, player, tick);
 
 	if (x == player.getX() && y == player.getY())
 	{

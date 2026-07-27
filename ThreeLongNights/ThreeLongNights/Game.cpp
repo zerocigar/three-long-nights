@@ -114,7 +114,7 @@ int main()
 
 		for (Animal* animal : animals)
 		{
-			animal->takeTurn(world, player, isDay(tick));
+			animal->takeTurn(world, player, isDay(tick), tick);
 		}
 
 		if (tick >= hungerTick)
