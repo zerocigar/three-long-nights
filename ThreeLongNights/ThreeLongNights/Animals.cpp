@@ -79,14 +79,14 @@ void Bear::chase(const std::vector<Tile>& world, Player& player)
 			move(x + dx, y, world);
 	}
 
-	if (!isInTerritory(player.getX(), player.getY()))
+	if (!isInTerritory(player.getX(), player.getY()) && aggroTiles > 0)
 		aggroTiles--;
 }
 
 void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
 {
-	// if not aggro'd and not in territory
-	if (!aggroTiles && !isInTerritory(x, y))
+	// if not in territory
+	if (!isInTerritory(x, y))
 	{
 		int dx{ stepToward(x, homeX) };
 		int dy{ stepToward(y, homeY) };
@@ -117,7 +117,7 @@ void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
 	move(x + randomX, y + randomY, world);
 }
 
-std::vector<int> Bear::getNearestResourceTile(const std::vector<Tile>& world) const
+std::vector<int> Bear::getNearestResourceTile(std::vector<Tile>& world, int tick) const
 {
 	bool found{ false };
 	int nearestDistance{ WIDTH * HEIGHT };
@@ -127,7 +127,7 @@ std::vector<int> Bear::getNearestResourceTile(const std::vector<Tile>& world) co
 	{
 		for (int x{ 0 }; x < WIDTH; x++)
 		{
-			if ((manhattanDistance(x, y, Bear::x, Bear::y) < nearestDistance) && world[cellIndex(x, y)].getHasResource() && world[cellIndex(x, y)].getTileType() != Tile::Grass)
+			if ((manhattanDistance(x, y, Bear::x, Bear::y) < nearestDistance) && world[cellIndex(x, y)].getHasResource(tick) && world[cellIndex(x, y)].getTileType() != Tile::Grass)
 			{
 				nearestDistance = manhattanDistance(x, y, Bear::x, Bear::y);
 				coords[0] = x;
@@ -143,7 +143,14 @@ std::vector<int> Bear::getNearestResourceTile(const std::vector<Tile>& world) co
 
 void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
 {
-	std::vector<int> coords{ getNearestResourceTile(world) };
+
+	if (manhattanDistance(x, y, player.getX(), player.getY()) <= 1)
+	{
+		chase(world, player);
+		return;
+	}
+
+	std::vector<int> coords{ getNearestResourceTile(world, tick) };
 
 	if (tilesToForage == 0 || coords.empty())
 	{
@@ -191,7 +198,7 @@ void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int ti
 		player.takeDamage(damageTaken);
 		std::cout << "The bear mauls you, dealing " << damageTaken << " damage!\n";
 
-		if (aggroTiles)
+		if (aggroTiles > 0 && !isInTerritory(player.getX(), player.getY()))
 			if (rand() % 100 + 1 <= 75)
 				aggroTiles = 0;
 	}

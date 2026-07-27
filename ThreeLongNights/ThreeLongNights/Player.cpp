@@ -45,16 +45,9 @@ void Player::interactTile(Tile& tile, int tick)
 {
 	//TODO: check if there's an entity at the tile BEFORE checking the tile type, entity interaction comes first
 
-
-	// only check if the tile should replenish resources by now when the player is checking it
-	if (!tile.getHasResource() && tick >= tile.getLastTickThatHadResource() + 50)
-	{
-		tile.respawnResource();
-	}
-
 	if (tile.getTileType() == Tile::Water)
 	{
-		if (tile.getHasResource())
+		if (tile.getHasResource(tick))
 		{
 			std::cout << "You take a few sips from the water before you.\n";
 			drink();
@@ -67,7 +60,7 @@ void Player::interactTile(Tile& tile, int tick)
 	}
 	else if (tile.getTileType() == Tile::Bush)
 	{
-		if (tile.getHasResource())
+		if (tile.getHasResource(tick))
 		{
 			std::cout << "You take some berries from the bush and eat them.\n";
 			eat(1);

@@ -35,7 +35,7 @@ public:
 	void wanderTerritory(const std::vector<Tile>& world, Player& player);
 	void forage(std::vector<Tile>& world, Player& player, int tick);
 	bool isInTerritory(int newX, int newY) const;
-	std::vector<int> getNearestResourceTile(const std::vector<Tile>& world) const;
+	std::vector<int> getNearestResourceTile(std::vector<Tile>& world, int tick) const;
 	Bear(int startingX, int startingY);
 };
 

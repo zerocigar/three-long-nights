@@ -6,6 +6,8 @@ class Tile
 	char symbol;
 	bool hasResource;
 	int lastTickThatHadResource;
+	static constexpr int REPLENISH_TICKS{ 50 };
+	void respawnResource();
 public:
 	enum TileType
 	{
@@ -17,10 +19,8 @@ private:
 public:
 	char getSymbol() const;
 	TileType getTileType() const;
-	int getLastTickThatHadResource() const;
-	bool getHasResource() const;
+	bool getHasResource(int tick);
 	void takeResource(int tick);
-	void respawnResource();
 	Tile(TileType type);
 };
 

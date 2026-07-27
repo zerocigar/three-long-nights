@@ -21,13 +21,11 @@ Tile::TileType Tile::getTileType() const
 	return tileType;
 }
 
-int Tile::getLastTickThatHadResource() const
+bool Tile::getHasResource(int tick)
 {
-	return lastTickThatHadResource;
-}
+	if (tick >= lastTickThatHadResource + REPLENISH_TICKS)
+		respawnResource();
 
-bool Tile::getHasResource() const
-{
 	return hasResource;
 }
 
