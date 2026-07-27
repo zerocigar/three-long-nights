@@ -42,10 +42,15 @@ bool Animal::move(int newX, int newY, const std::vector<Tile>& world)
 
 
 Bear::Bear(int startingX, int startingY) :
-	Animal(startingX, startingY, 'B')
+	homeX(startingX), homeY(startingY), Animal(startingX, startingY, 'B')
 { };
 
-void Bear::takeTurn(const std::vector<Tile>& world, Player& player)
+bool Bear::isInTerritory(int px, int py) const
+{
+	return manhattanDistance(px, py, homeX, homeY) <= TERRITORY_RADIUS;
+}
+
+void Bear::chase(const std::vector<Tile>& world, Player& player)
 {
 	int dx{ stepToward(x, player.getX()) };
 	int dy{ stepToward(y, player.getY()) };
@@ -74,10 +79,73 @@ void Bear::takeTurn(const std::vector<Tile>& world, Player& player)
 			move(x + dx, y, world);
 	}
 
+	if (!isInTerritory(player.getX(), player.getY()))
+		aggroTiles--;
+}
+
+void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
+{
+	// if not aggro'd, daytime, and not in territory
+	if (!isInTerritory(x, y))
+	{
+		int dx{ stepToward(x, homeX) };
+		int dy{ stepToward(y, homeY) };
+
+		if (dx)
+		{
+			if (!move(x + dx, y, world))
+				move(x, y + dy, world);
+		}
+		else
+			move(x, y + dy, world);
+
+		return;
+	}
+
+	int randomX{ rand() % 3 - 1 };
+	int randomY{ rand() % 3 - 1 };
+
+	while (!canEnter(x + randomX, y + randomY, world) || !isInTerritory(x + randomX, y + randomY))
+	{
+		// if x is bad, change x; vice versa in else
+		if (!canEnter(x + randomX, y, world) || !isInTerritory(x + randomX, y))
+			randomX = rand() % 3 - 1;
+		else
+			randomY = rand() % 3 - 1;
+	}
+
+	move(x + randomX, y + randomY, world);
+}
+
+void Bear::forage(const std::vector<Tile>& world, Player& player)
+{
+	if (!tilesToForage)
+		tilesToForage = rand() % 4 + 1;
+
+
+	// TODO: find nearest tile with resources and bounce between them. after eating one, tilesToForage--
+}
+
+void Bear::takeTurn(const std::vector<Tile>& world, Player& player, bool isDay)
+{
+	if (isInTerritory(player.getX(), player.getY()) && !aggroTiles && isDay)
+		aggroTiles = rand() % 6 + 5;
+
+	if (aggroTiles)
+		chase(world, player);
+	else if (isDay)
+		wanderTerritory(world, player);
+	else
+		forage(world, player);
+
 	if (x == player.getX() && y == player.getY())
 	{
 		int damageTaken{ rand() % 2 + 6 };
 		player.takeDamage(damageTaken);
 		std::cout << "The bear mauls you, dealing " << damageTaken << " damage!\n";
+
+		if (aggroTiles)
+			if (rand() % 100 + 1 <= 75)
+				aggroTiles = 0;
 	}
 }

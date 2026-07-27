@@ -55,6 +55,7 @@ int getRandomThirstTickInterval()
 int main()
 {
 	srand(static_cast<unsigned>(time(nullptr)));
+
 	int startingHunger{ rand() % 2 == 0 ? 7 : 8 };
 	int startingThirst{ rand() % 2 == 0 ? 7 : 8 };
 	Player player{ 2, 3, startingHunger, startingThirst };
@@ -63,6 +64,7 @@ int main()
 	int tick{ 1 };
 	std::vector<char> validActionChars{ 'w', 'a', 's', 'd', 'x'};
 	std::vector <Tile> world {createWorld()};
+
 	int hungerTick{ getRandomHungerTickInterval()};
 	int thirstTick{ getRandomThirstTickInterval()};
 
@@ -112,7 +114,7 @@ int main()
 
 		for (Animal* animal : animals)
 		{
-			animal->takeTurn(world, player);
+			animal->takeTurn(world, player, isDay(tick));
 		}
 
 		if (tick >= hungerTick)

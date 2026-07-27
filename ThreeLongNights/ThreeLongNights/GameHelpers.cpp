@@ -122,3 +122,9 @@ std::vector<int> getValidStartingCoordinates(const std::vector<Tile>& world, con
 
 	return std::vector<int>{randomX, randomY};
 }
+
+// manhattan distance for non-diagonal distance calculations
+int manhattanDistance(int x1, int y1, int x2, int y2)
+{
+	return abs(x1 - x2) + abs(y1 - y2);
+}

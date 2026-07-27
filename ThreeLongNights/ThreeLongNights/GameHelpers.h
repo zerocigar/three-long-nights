@@ -19,5 +19,6 @@ bool isInBounds(int x, int y);
 bool canEnter(int x, int y, const std::vector<Tile>& world);
 void applyOffsets(char input, int& x, int& y);
 std::vector<int> getValidStartingCoordinates(const std::vector<Tile>& world, const Player& player);
+int manhattanDistance(int x1, int y1, int x2, int y2);
 
 #endif
