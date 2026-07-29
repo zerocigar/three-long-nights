@@ -72,7 +72,10 @@ int main()
 	std::vector<int> bearStartingCoords{ getValidStartingCoordinates(world, player) };
 	Bear bear{ bearStartingCoords[0], bearStartingCoords[1]};
 
-	std::vector<Animal*> animals{&bear};
+	std::vector<int> chickenStartingCoords{ getValidStartingCoordinates(world, player) };
+	Chicken chicken{ chickenStartingCoords[0], chickenStartingCoords[1] };
+
+	std::vector<Animal*> animals{&bear, &chicken};
 
 	// game ends after 300 ticks (3 days)
 	while (tick <= 300 && player.getHealth() > 0)

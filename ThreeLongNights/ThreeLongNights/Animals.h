@@ -13,12 +13,15 @@ protected:
 	int y;
 	int HP;
 	bool alive {true};
+	bool beingAttacked{ false };
+	int runAwayTiles{ 0 };
 
 public:
 	char getSymbol() const;
 	int getX() const;
 	int getY() const;
 	bool isAlive() const;
+	void assignRunAwayTiles();
 	virtual void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) = 0;
 	bool move(int x, int y, const std::vector<Tile>& world);
 	void takeDamage();
@@ -42,6 +45,13 @@ public:
 	bool isInTerritory(int newX, int newY) const;
 	std::vector<int> getNearestResourceTile(std::vector<Tile>& world, int tick) const;
 	Bear(int startingX, int startingY);
+};
+
+class Chicken : public Animal
+{
+public:
+	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) override;
+	Chicken(int startingX, int startingY);
 };
 
 #endif

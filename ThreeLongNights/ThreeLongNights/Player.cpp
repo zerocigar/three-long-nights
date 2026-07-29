@@ -80,7 +80,7 @@ void Player::interactTile(Tile& tile, int tick)
 void Player::interactEntity(Animal& animal)
 {
 	animal.takeDamage();
-	std::cout << "You attack the animal with your bare fists!";
+	std::cout << "You attack the animal with your bare fists! ";
 
 	if (!animal.isAlive())
 		std::cout << "The animal dies!";

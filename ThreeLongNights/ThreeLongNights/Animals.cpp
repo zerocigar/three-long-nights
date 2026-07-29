@@ -34,6 +34,11 @@ bool Animal::isAlive() const
 	return alive;
 }
 
+void Animal::assignRunAwayTiles()
+{
+	runAwayTiles = rand() % 5 + 1;
+}
+
 bool Animal::move(int newX, int newY, const std::vector<Tile>& world)
 {
 	if (canEnter(newX, newY, world))
@@ -53,7 +58,11 @@ void Animal::takeDamage()
 	if (HP <= 0)
 	{
 		alive = false;
+		HP = 0;
 	}
+
+	beingAttacked = true;
+	assignRunAwayTiles();
 }
 
 
@@ -218,4 +227,68 @@ void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int ti
 			if (rand() % 100 + 1 <= 75)
 				aggroTiles = 0;
 	}
+}
+
+Chicken::Chicken(int startingX, int startingY) :
+	Animal(startingX, startingY, 'c', 2) { }
+
+void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
+{
+	int moveXorY{ rand() % 2 };
+
+	if (beingAttacked)
+	{
+		std::vector<int> xOffsets{ -1, 1, 0, 0 };
+		std::vector<int> yOffsets{ 0, 0, -1, 1 };
+
+		int currentDistance{ manhattanDistance(x, y, player.getX(), player.getY()) };
+		int bestDistance{ currentDistance };
+		int bestX{ x };
+		int bestY{ y };
+		bool escapeFound{ false };
+
+		for (int i{ 0 }; i < 4; i++)
+		{
+			int candidateX{ x + xOffsets[i] };
+			int candidateY{ y + yOffsets[i] };
+
+			if (!canEnter(candidateX, candidateY, world))
+				continue;
+
+			int candidateDistance{ manhattanDistance(candidateX, candidateY, player.getX(), player.getY()) };
+
+			if (candidateDistance > bestDistance)
+			{
+				bestDistance = currentDistance;
+				bestX = candidateX;
+				bestY = candidateY;
+				escapeFound = true;
+			}
+		}
+
+		if (escapeFound)
+			move(bestX, bestY, world);
+
+		runAwayTiles--;
+	}
+	else
+	{
+		int randomXDirection{ rand() % 3 - 1 };
+		int randomYDirection{ rand() % 3 - 1 };
+
+		if (moveXorY == 0)
+		{
+			if (!move(x + randomXDirection, y, world))
+				move(x, y + randomYDirection, world);
+		}
+		else
+		{
+			if (!move(x, y + randomYDirection, world))
+				move(x + randomXDirection, y, world);
+		}
+
+	}
+
+	if (runAwayTiles <= 0)
+		beingAttacked = false;
 }
