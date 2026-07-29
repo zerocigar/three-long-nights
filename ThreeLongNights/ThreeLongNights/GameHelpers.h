@@ -7,8 +7,8 @@
 #include "Player.h"
 
 // establish width and height of grid
-constexpr inline int WIDTH{ 10 };
-constexpr inline int HEIGHT{ 10 };
+constexpr inline int WIDTH{ 25 };
+constexpr inline int HEIGHT{ 25 };
 
 bool isActionValid(const std::vector<char>& actions, char input);
 char getValidatedPlayerAction(const std::string& prompt, const std::vector<char>& actions);

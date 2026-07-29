@@ -1,6 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 #include "Animals.h"
+#include "Player.h"
 #include "GameHelpers.h"
 
 int stepToward(const int& from, const int& to)
@@ -10,8 +11,8 @@ int stepToward(const int& from, const int& to)
 	else return 0;
 }
 
-Animal::Animal(int startingX, int startingY, char ascii) :
-	x(startingX), y(startingY), symbol(ascii) { }
+Animal::Animal(int startingX, int startingY, char ascii, int startingHP) :
+	x(startingX), y(startingY), symbol(ascii), HP(startingHP)  { }
 
 char Animal::getSymbol() const
 {
@@ -28,6 +29,11 @@ int Animal::getY() const
 	return y;
 }
 
+bool Animal::isAlive() const
+{
+	return alive;
+}
+
 bool Animal::move(int newX, int newY, const std::vector<Tile>& world)
 {
 	if (canEnter(newX, newY, world))
@@ -40,9 +46,19 @@ bool Animal::move(int newX, int newY, const std::vector<Tile>& world)
 	return false;
 }
 
+void Animal::takeDamage()
+{
+	HP -= 1;
+
+	if (HP <= 0)
+	{
+		alive = false;
+	}
+}
+
 
 Bear::Bear(int startingX, int startingY) :
-	homeX(startingX), homeY(startingY), Animal(startingX, startingY, 'B')
+	homeX(startingX), homeY(startingY), Animal(startingX, startingY, 'B', 10)
 { };
 
 bool Bear::isInTerritory(int px, int py) const

@@ -2,6 +2,9 @@
 #define PLAYER5837191
 
 #include "Tile.h"
+
+class Animal;
+
 class Player {
 	int x;
 	int y;
@@ -21,6 +24,7 @@ public:
 	int getHunger() const;
 	int getThirst() const;
 	void setPos(int newX, int newY);
+	void interactEntity(Animal& animal);
 	void interactTile(Tile& tile, int tick);
 	void takeDamage(int damage);
 	void eat(int hungerValue);

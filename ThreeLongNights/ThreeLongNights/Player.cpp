@@ -1,4 +1,5 @@
 #include "Player.h"
+#include "Animals.h"
 #include <iostream>
 
 Player::Player(int startingX, int startingY, int startingHunger, int startingThirst) :
@@ -43,7 +44,6 @@ void Player::setPos(int newX, int newY)
 
 void Player::interactTile(Tile& tile, int tick)
 {
-	//TODO: check if there's an entity at the tile BEFORE checking the tile type, entity interaction comes first
 
 	if (tile.getTileType() == Tile::Water)
 	{
@@ -77,6 +77,17 @@ void Player::interactTile(Tile& tile, int tick)
 	}
 }
 
+void Player::interactEntity(Animal& animal)
+{
+	animal.takeDamage();
+	std::cout << "You attack the animal with your bare fists!";
+
+	if (!animal.isAlive())
+		std::cout << "The animal dies!";
+
+	std::cout << '\n';
+}
+
 void Player::takeDamage(int damage)
 {
 	health -= damage;
@@ -95,7 +106,7 @@ void Player::eat(int hungerValue)
 
 void Player::drink()
 {
-	thirst += 1;
+	thirst += 2;
 
 	if (thirst > MAX_THIRST)
 		thirst = MAX_THIRST;

@@ -21,10 +21,11 @@ void printWorld(const std::vector<Tile>& world, int tick, const Player& player, 
 			bool animalFound{ false };
 			for (Animal* animal : animals)
 			{
-				if (x == animal->getX() && y == animal->getY())
+				if (x == animal->getX() && y == animal->getY() && animal->isAlive())
 				{
 					std::cout << ' ' << animal->getSymbol() << ' ';
 					animalFound = true;
+					break;
 				}
 			}
 
@@ -98,13 +99,25 @@ int main()
 		}
 		else
 		{
-			playerInput = getValidatedPlayerAction("Type w/a/s/d respectively to interact with the tile in that direction, or type 'x' to interact with the tile you're in.\n", validActionChars);
+			playerInput = getValidatedPlayerAction("Type w/a/s/d respectively to interact with the tile or entity in that direction, or type 'x' to interact with the tile you're in.\nInteracting with a tile with an entity on it will always prioritize the entity.\n", validActionChars);
 
 			applyOffsets(playerInput, newX, newY);
 
 			if (isInBounds(newX, newY))
 			{
-				player.interactTile(world[cellIndex(newX, newY)], tick);
+				bool animalFound{ false };
+				for (Animal* animal : animals)
+				{
+					if (animal->getX() == newX && animal->getY() == newY && animal->isAlive())
+					{
+						player.interactEntity(*animal);
+						animalFound = true;
+						break;
+					}
+				}
+
+				if (!animalFound)
+					player.interactTile(world[cellIndex(newX, newY)], tick);
 			}
 			else
 			{
@@ -114,7 +127,8 @@ int main()
 
 		for (Animal* animal : animals)
 		{
-			animal->takeTurn(world, player, isDay(tick), tick);
+			if (animal->isAlive())
+				animal->takeTurn(world, player, isDay(tick), tick);
 		}
 
 		if (tick >= hungerTick)

@@ -1,8 +1,9 @@
 #ifndef ANIMALS08475718
 #define ANIMALS08475718
 #include "Tile.h"
-#include "Player.h"
 #include <vector>
+
+class Player;
 
 class Animal
 {
@@ -10,14 +11,18 @@ protected:
 	char symbol;
 	int x;
 	int y;
+	int HP;
+	bool alive {true};
 
 public:
 	char getSymbol() const;
 	int getX() const;
 	int getY() const;
+	bool isAlive() const;
 	virtual void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) = 0;
 	bool move(int x, int y, const std::vector<Tile>& world);
-	Animal(int startingX, int startingY, char ascii);
+	void takeDamage();
+	Animal(int startingX, int startingY, char ascii, int startingHP);
 };
 
 
