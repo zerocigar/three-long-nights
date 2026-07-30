@@ -170,7 +170,7 @@ int main()
 	}
 	else
 	{
-		if (player.getX() == bear.getX() && player.getY() == bear.getY())
+		if (player.getX() == bear.getX() && player.getY() == bear.getY() && bear.isAlive())
 		{
 			std::cout << "You were mauled to death.\n";
 		}

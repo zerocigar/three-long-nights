@@ -11,8 +11,8 @@ int stepToward(const int& from, const int& to)
 	else return 0;
 }
 
-Animal::Animal(int startingX, int startingY, char ascii, int startingHP) :
-	x(startingX), y(startingY), symbol(ascii), HP(startingHP)  { }
+Animal::Animal(int startingX, int startingY, char ascii, int startingHP, int foodValue) :
+	x(startingX), y(startingY), symbol(ascii), HP(startingHP), foodValue(foodValue)  { }
 
 char Animal::getSymbol() const
 {
@@ -32,6 +32,11 @@ int Animal::getY() const
 bool Animal::isAlive() const
 {
 	return alive;
+}
+
+int Animal::getFoodValue() const
+{
+	return foodValue;
 }
 
 void Animal::assignRunAwayTiles()
@@ -67,7 +72,7 @@ void Animal::takeDamage()
 
 
 Bear::Bear(int startingX, int startingY) :
-	homeX(startingX), homeY(startingY), Animal(startingX, startingY, 'B', 10)
+	homeX(startingX), homeY(startingY), Animal(startingX, startingY, 'B', 10, 10)
 { };
 
 bool Bear::isInTerritory(int px, int py) const
@@ -230,7 +235,7 @@ void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int ti
 }
 
 Chicken::Chicken(int startingX, int startingY) :
-	Animal(startingX, startingY, 'c', 2) { }
+	Animal(startingX, startingY, 'c', 2, 2) { }
 
 void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
 {

@@ -13,6 +13,7 @@ protected:
 	int y;
 	int HP;
 	bool alive {true};
+	int foodValue;
 	bool beingAttacked{ false };
 	int runAwayTiles{ 0 };
 
@@ -21,11 +22,12 @@ public:
 	int getX() const;
 	int getY() const;
 	bool isAlive() const;
+	int getFoodValue() const;
 	void assignRunAwayTiles();
 	virtual void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) = 0;
 	bool move(int x, int y, const std::vector<Tile>& world);
 	void takeDamage();
-	Animal(int startingX, int startingY, char ascii, int startingHP);
+	Animal(int startingX, int startingY, char ascii, int startingHP, int foodValue);
 };
 
 

@@ -83,7 +83,10 @@ void Player::interactEntity(Animal& animal)
 	std::cout << "You attack the animal with your bare fists! ";
 
 	if (!animal.isAlive())
-		std::cout << "The animal dies!";
+	{
+		std::cout << "The animal dies, and you do what you must for sustenance.";
+		eat(animal.getFoodValue());
+	}
 
 	std::cout << '\n';
 }
