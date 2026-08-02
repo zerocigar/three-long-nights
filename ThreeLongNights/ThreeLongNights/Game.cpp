@@ -76,7 +76,7 @@ int main()
 	Chicken chicken{ chickenStartingCoords[0], chickenStartingCoords[1] };
 
 	std::vector<int> boarStartingCoords{ getValidStartingCoordinates(world, player) };
-	Boar boar(boarStartingCoords[0], boarStartingCoords[1]);
+	Boar boar(boarStartingCoords[0], boarStartingCoords[1], bear);
 
 	std::vector<Animal*> animals{&bear, &chicken, &boar};
 

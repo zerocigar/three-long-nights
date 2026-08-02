@@ -297,8 +297,8 @@ void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int
 		beingAttacked = false;
 }
 
-Boar::Boar(int startingX, int startingY) :
-	Animal(startingX, startingY, 'O', 4, 4) { }
+Boar::Boar(int startingX, int startingY, Bear& bear) :
+	bear(bear), Animal(startingX, startingY, 'P', 4, 4) { }
 
 void Boar::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
 {
@@ -315,24 +315,7 @@ void Boar::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int ti
 		}
 	}
 	else
-	{
-		int randomX{ rand() % 3 - 1 };
-		int randomY{ rand() % 3 - 1 };
-
-		int xOrYFirst{ rand() % 2 };
-
-		// x first
-		if (xOrYFirst == 0)
-		{
-			if (!move(x + randomX, y, world))
-				move(x, y + randomY, world);
-		}
-		else
-		{
-			if (!move(x, y + randomY, world))
-				move(x + randomX, y, world);
-		}
-	}
+		roam(world);
 }
 
 void Boar::chase(const std::vector<Tile>& world, Player& player)
@@ -373,4 +356,33 @@ void Boar::chase(const std::vector<Tile>& world, Player& player)
 
 	if (aggroTiles <= 0)
 		beingAttacked = false;
+}
+
+void Boar::roam(const std::vector<Tile>& world)
+{
+	std::vector<int> xOffsets{ -1, 1, 0, 0 };
+	std::vector<int> yOffsets{ 0, 0, -1, 1 };
+
+	std::vector<int> candidateMovesX{};
+	std::vector<int> candidateMovesY{};
+
+	for (int i{ 0 }; i < 4; i++)
+	{
+		if (canEnter(x + xOffsets[i], y + yOffsets[i], world))
+		{
+			if (manhattanDistance(x + xOffsets[i], y + yOffsets[i], bear.getX(), bear.getY()) <= 2 && bear.isAlive())
+				continue;
+
+			candidateMovesX.push_back(xOffsets[i]);
+			candidateMovesY.push_back(yOffsets[i]);
+		}
+	}
+
+	// if no valid moves
+	if (candidateMovesX.empty())
+		return;
+
+	int randomMove{ rand() % candidateMovesX.size()};
+
+	move(x + candidateMovesX[randomMove], y + candidateMovesY[randomMove], world);
 }

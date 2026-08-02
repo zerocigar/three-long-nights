@@ -59,11 +59,13 @@ public:
 class Boar : public Animal
 {
 	int aggroTiles{ 0 };
+	const Bear& bear;
 
 public:
 	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) override;
 	void chase(const std::vector<Tile>& world, Player& player);
-	Boar(int startingX, int startingY);
+	void roam(const std::vector<Tile>& world);
+	Boar(int startingX, int startingY, Bear& bear);
 };
 
 #endif
