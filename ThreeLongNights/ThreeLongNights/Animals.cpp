@@ -382,7 +382,7 @@ void Boar::roam(const std::vector<Tile>& world)
 	if (candidateMovesX.empty())
 		return;
 
-	int randomMove{ rand() % candidateMovesX.size()};
+	std::size_t randomMove{ rand() % candidateMovesX.size()};
 
 	move(x + candidateMovesX[randomMove], y + candidateMovesY[randomMove], world);
 }
