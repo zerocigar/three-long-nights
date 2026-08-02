@@ -56,4 +56,14 @@ public:
 	Chicken(int startingX, int startingY);
 };
 
+class Boar : public Animal
+{
+	int aggroTiles{ 0 };
+
+public:
+	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) override;
+	void chase(const std::vector<Tile>& world, Player& player);
+	Boar(int startingX, int startingY);
+};
+
 #endif

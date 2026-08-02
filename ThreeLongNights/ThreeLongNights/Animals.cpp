@@ -239,8 +239,6 @@ Chicken::Chicken(int startingX, int startingY) :
 
 void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
 {
-	int moveXorY{ rand() % 2 };
-
 	if (beingAttacked)
 	{
 		std::vector<int> xOffsets{ -1, 1, 0, 0 };
@@ -264,7 +262,7 @@ void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int
 
 			if (candidateDistance > bestDistance)
 			{
-				bestDistance = currentDistance;
+				bestDistance = candidateDistance;
 				bestX = candidateX;
 				bestY = candidateY;
 				escapeFound = true;
@@ -280,6 +278,7 @@ void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int
 	{
 		int randomXDirection{ rand() % 3 - 1 };
 		int randomYDirection{ rand() % 3 - 1 };
+		int moveXorY{ rand() % 2 };
 
 		if (moveXorY == 0)
 		{
@@ -295,5 +294,83 @@ void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int
 	}
 
 	if (runAwayTiles <= 0)
+		beingAttacked = false;
+}
+
+Boar::Boar(int startingX, int startingY) :
+	Animal(startingX, startingY, 'O', 4, 4) { }
+
+void Boar::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
+{
+	if (beingAttacked && aggroTiles <= 0)
+		aggroTiles = rand() % 4 + 3;
+
+	if (aggroTiles)
+	{
+		chase(world, player);
+		if (x == player.getX() && y == player.getY())
+		{
+			player.takeDamage(1);
+			std::cout << "The boar attacks you with its horns!\n";
+		}
+	}
+	else
+	{
+		int randomX{ rand() % 3 - 1 };
+		int randomY{ rand() % 3 - 1 };
+
+		int xOrYFirst{ rand() % 2 };
+
+		// x first
+		if (xOrYFirst == 0)
+		{
+			if (!move(x + randomX, y, world))
+				move(x, y + randomY, world);
+		}
+		else
+		{
+			if (!move(x, y + randomY, world))
+				move(x + randomX, y, world);
+		}
+	}
+}
+
+void Boar::chase(const std::vector<Tile>& world, Player& player)
+{
+	std::vector<int> xOffsets{ -1, 1, 0, 0 };
+	std::vector<int> yOffsets{ 0, 0, -1, 1 };
+
+	int currentDistance{ manhattanDistance(x, y, player.getX(), player.getY()) };
+	int bestDistance{ currentDistance };
+	int bestX{ x };
+	int bestY{ y };
+	bool routeFound{ false };
+
+	for (int i{ 0 }; i < 4; i++)
+	{
+		int candidateX{ x + xOffsets[i] };
+		int candidateY{ y + yOffsets[i] };
+
+		if (!canEnter(candidateX, candidateY, world))
+			continue;
+
+		int candidateDistance{ manhattanDistance(candidateX, candidateY, player.getX(), player.getY()) };
+
+		if (candidateDistance < bestDistance)
+		{
+			bestDistance = candidateDistance;
+			bestX = candidateX;
+			bestY = candidateY;
+			routeFound = true;
+		}
+	}
+
+	if (routeFound)
+		move(bestX, bestY, world);
+
+
+	aggroTiles--;
+
+	if (aggroTiles <= 0)
 		beingAttacked = false;
 }
