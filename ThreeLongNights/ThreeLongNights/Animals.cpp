@@ -44,9 +44,9 @@ void Animal::assignRunAwayTiles()
 	runAwayTiles = rand() % 5 + 1;
 }
 
-bool Animal::move(int newX, int newY, const std::vector<Tile>& world)
+bool Animal::move(int newX, int newY, const std::vector<Tile>& world, const std::vector<Animal*>& animals)
 {
-	if (canEnter(newX, newY, world))
+	if (canEnter(newX, newY, world) && !otherAnimalInTile(*this, newX, newY, animals))
 	{
 		x = newX;
 		y = newY;
@@ -80,7 +80,7 @@ bool Bear::isInTerritory(int px, int py) const
 	return manhattanDistance(px, py, homeX, homeY) <= TERRITORY_RADIUS;
 }
 
-void Bear::chase(const std::vector<Tile>& world, Player& player)
+void Bear::chase(const std::vector<Tile>& world, Player& player, const std::vector<Animal*>& animals)
 {
 	int dx{ stepToward(x, player.getX()) };
 	int dy{ stepToward(y, player.getY()) };
@@ -89,31 +89,31 @@ void Bear::chase(const std::vector<Tile>& world, Player& player)
 	{
 		if (rand() % 2 == 0)
 		{
-			if (!move(x, y + dy, world)) // try vertical movement first
-				move(x + dx, y, world);
+			if (!move(x, y + dy, world, animals)) // try vertical movement first
+				move(x + dx, y, world, animals);
 		}
 		else
 		{
-			if (!move(x + dx, y, world)) // try horizontal movement first
-				move(x, y + dy, world);
+			if (!move(x + dx, y, world, animals)) // try horizontal movement first
+				move(x, y + dy, world, animals);
 		}
 	}
 	else if (dx) // if horizontal difference only
 	{
-		if (!move(x + dx, y, world))
-			move(x, y + dy, world);
+		if (!move(x + dx, y, world, animals))
+			move(x, y + dy, world, animals);
 	}
 	else if (dy) // if vertical difference only
 	{
-		if (!move(x, y + dy, world))
-			move(x + dx, y, world);
+		if (!move(x, y + dy, world, animals))
+			move(x + dx, y, world, animals);
 	}
 
 	if (!isInTerritory(player.getX(), player.getY()) && aggroTiles > 0)
 		aggroTiles--;
 }
 
-void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
+void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player, const std::vector<Animal*>& animals)
 {
 	// if not in territory
 	if (!isInTerritory(x, y))
@@ -123,11 +123,11 @@ void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
 
 		if (dx)
 		{
-			if (!move(x + dx, y, world))
-				move(x, y + dy, world);
+			if (!move(x + dx, y, world, animals))
+				move(x, y + dy, world, animals);
 		}
 		else
-			move(x, y + dy, world);
+			move(x, y + dy, world, animals);
 
 		return;
 	}
@@ -144,7 +144,7 @@ void Bear::wanderTerritory(const std::vector<Tile>& world, Player& player)
 			randomY = rand() % 3 - 1;
 	}
 
-	move(x + randomX, y + randomY, world);
+	move(x + randomX, y + randomY, world, animals);
 }
 
 std::vector<int> Bear::getNearestResourceTile(std::vector<Tile>& world, int tick) const
@@ -171,12 +171,12 @@ std::vector<int> Bear::getNearestResourceTile(std::vector<Tile>& world, int tick
 	return coords;
 }
 
-void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
+void Bear::forage(std::vector<Tile>& world, Player& player, int tick, const std::vector<Animal*>& animals)
 {
 
 	if (manhattanDistance(x, y, player.getX(), player.getY()) <= 1)
 	{
-		chase(world, player);
+		chase(world, player, animals);
 		return;
 	}
 
@@ -184,7 +184,7 @@ void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
 
 	if (tilesToForage == 0 || coords.empty())
 	{
-		wanderTerritory(world, player);
+		wanderTerritory(world, player, animals);
 		return;
 	}
 
@@ -193,11 +193,11 @@ void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
 
 	if (dx)
 	{
-		if (!move(x + dx, y, world))
-			move(x, y + dy, world);
+		if (!move(x + dx, y, world, animals))
+			move(x, y + dy, world, animals);
 	}
 	else
-		move(x, y + dy, world);
+		move(x, y + dy, world, animals);
 
 	if (manhattanDistance(x, y, coords[0], coords[1]) <= 1)
 	{
@@ -206,7 +206,7 @@ void Bear::forage(std::vector<Tile>& world, Player& player, int tick)
 	}
 }
 
-void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
+void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick, const std::vector<Animal*>& animals)
 {
 	if (wasDay && !isDay)
 		tilesToForage = rand() % 6 + 3;
@@ -216,11 +216,11 @@ void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int ti
 		aggroTiles = rand() % 6 + 5;
 
 	if (aggroTiles)
-		chase(world, player);
+		chase(world, player, animals);
 	else if (isDay)
-		wanderTerritory(world, player);
+		wanderTerritory(world, player, animals);
 	else
-		forage(world, player, tick);
+		forage(world, player, tick, animals);
 
 	if (x == player.getX() && y == player.getY())
 	{
@@ -237,7 +237,7 @@ void Bear::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int ti
 Chicken::Chicken(int startingX, int startingY) :
 	Animal(startingX, startingY, 'c', 2, 2) { }
 
-void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
+void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick, const std::vector<Animal*>& animals)
 {
 	if (beingAttacked)
 	{
@@ -270,7 +270,7 @@ void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int
 		}
 
 		if (escapeFound)
-			move(bestX, bestY, world);
+			move(bestX, bestY, world, animals);
 
 		runAwayTiles--;
 	}
@@ -282,13 +282,13 @@ void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int
 
 		if (moveXorY == 0)
 		{
-			if (!move(x + randomXDirection, y, world))
-				move(x, y + randomYDirection, world);
+			if (!move(x + randomXDirection, y, world, animals))
+				move(x, y + randomYDirection, world, animals);
 		}
 		else
 		{
-			if (!move(x, y + randomYDirection, world))
-				move(x + randomXDirection, y, world);
+			if (!move(x, y + randomYDirection, world, animals))
+				move(x + randomXDirection, y, world, animals);
 		}
 
 	}
@@ -300,14 +300,14 @@ void Chicken::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int
 Boar::Boar(int startingX, int startingY, Bear& bear) :
 	bear(bear), Animal(startingX, startingY, 'P', 4, 4) { }
 
-void Boar::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick)
+void Boar::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick, const std::vector<Animal*>& animals)
 {
 	if (beingAttacked && aggroTiles <= 0)
 		aggroTiles = rand() % 4 + 3;
 
 	if (aggroTiles)
 	{
-		chase(world, player);
+		chase(world, player, animals);
 		if (x == player.getX() && y == player.getY())
 		{
 			player.takeDamage(1);
@@ -315,10 +315,10 @@ void Boar::takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int ti
 		}
 	}
 	else
-		roam(world);
+		roam(world, animals);
 }
 
-void Boar::chase(const std::vector<Tile>& world, Player& player)
+void Boar::chase(const std::vector<Tile>& world, Player& player, const std::vector<Animal*>& animals)
 {
 	std::vector<int> xOffsets{ -1, 1, 0, 0 };
 	std::vector<int> yOffsets{ 0, 0, -1, 1 };
@@ -349,7 +349,7 @@ void Boar::chase(const std::vector<Tile>& world, Player& player)
 	}
 
 	if (routeFound)
-		move(bestX, bestY, world);
+		move(bestX, bestY, world, animals);
 
 
 	aggroTiles--;
@@ -358,7 +358,7 @@ void Boar::chase(const std::vector<Tile>& world, Player& player)
 		beingAttacked = false;
 }
 
-void Boar::roam(const std::vector<Tile>& world)
+void Boar::roam(const std::vector<Tile>& world, const std::vector<Animal*>& animals)
 {
 	std::vector<int> xOffsets{ -1, 1, 0, 0 };
 	std::vector<int> yOffsets{ 0, 0, -1, 1 };
@@ -384,5 +384,5 @@ void Boar::roam(const std::vector<Tile>& world)
 
 	std::size_t randomMove{ rand() % candidateMovesX.size()};
 
-	move(x + candidateMovesX[randomMove], y + candidateMovesY[randomMove], world);
+	move(x + candidateMovesX[randomMove], y + candidateMovesY[randomMove], world, animals);
 }

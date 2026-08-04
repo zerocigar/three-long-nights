@@ -24,8 +24,8 @@ public:
 	bool isAlive() const;
 	int getFoodValue() const;
 	void assignRunAwayTiles();
-	virtual void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) = 0;
-	bool move(int x, int y, const std::vector<Tile>& world);
+	virtual void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick, const std::vector<Animal*>& animals) = 0;
+	bool move(int x, int y, const std::vector<Tile>& world, const std::vector<Animal*>& animals);
 	void takeDamage();
 	Animal(int startingX, int startingY, char ascii, int startingHP, int foodValue);
 };
@@ -40,10 +40,10 @@ class Bear : public Animal
 	bool wasDay{ true };
 	static constexpr int TERRITORY_RADIUS{ 2 };
 public:
-	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) override;
-	void chase(const std::vector<Tile>& world, Player& player);
-	void wanderTerritory(const std::vector<Tile>& world, Player& player);
-	void forage(std::vector<Tile>& world, Player& player, int tick);
+	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick, const std::vector<Animal*>& animals) override;
+	void chase(const std::vector<Tile>& world, Player& player, const std::vector<Animal*>& animals);
+	void wanderTerritory(const std::vector<Tile>& world, Player& player, const std::vector<Animal*>& animals);
+	void forage(std::vector<Tile>& world, Player& player, int tick, const std::vector<Animal*>& animals);
 	bool isInTerritory(int newX, int newY) const;
 	std::vector<int> getNearestResourceTile(std::vector<Tile>& world, int tick) const;
 	Bear(int startingX, int startingY);
@@ -52,7 +52,7 @@ public:
 class Chicken : public Animal
 {
 public:
-	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) override;
+	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick, const std::vector<Animal*>& animals) override;
 	Chicken(int startingX, int startingY);
 };
 
@@ -62,9 +62,9 @@ class Boar : public Animal
 	const Bear& bear;
 
 public:
-	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick) override;
-	void chase(const std::vector<Tile>& world, Player& player);
-	void roam(const std::vector<Tile>& world);
+	void takeTurn(std::vector<Tile>& world, Player& player, bool isDay, int tick, const std::vector<Animal*>& animals) override;
+	void chase(const std::vector<Tile>& world, Player& player, const std::vector<Animal*>& animals);
+	void roam(const std::vector<Tile>& world, const std::vector<Animal*>& animals);
 	Boar(int startingX, int startingY, Bear& bear);
 };
 

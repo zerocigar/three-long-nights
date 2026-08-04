@@ -2,6 +2,7 @@
 #include <cstdlib>
 #include <limits>
 #include "GameHelpers.h"
+#include "Animals.h"
 
 bool isActionValid(const std::vector<char>& actions, char input)
 {
@@ -127,4 +128,20 @@ std::vector<int> getValidStartingCoordinates(const std::vector<Tile>& world, con
 int manhattanDistance(int x1, int y1, int x2, int y2)
 {
 	return abs(x1 - x2) + abs(y1 - y2);
+}
+
+bool otherAnimalInTile(const Animal& animalCalling, int xCandidate, int yCandidate, const std::vector<Animal*>& animals)
+{
+	for (Animal* animal : animals)
+	{
+		if (animal == &animalCalling)
+			continue;
+
+		if (animal->isAlive() && animal->getX() == xCandidate && animal->getY() == yCandidate)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }
